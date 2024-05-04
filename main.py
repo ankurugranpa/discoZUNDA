@@ -31,6 +31,7 @@ async def main():
     # await bot.load_extension("cogs.hello")
     await bot.load_extension(name="commands.hello")
     await bot.load_extension(name="commands.voicevox")
+    await bot.load_extension(name="commands.base")
     # Botを起動
     await bot.start(env.TOKEN)
 

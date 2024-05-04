@@ -1,52 +1,70 @@
+import io
+
 import discord
 from discord.ext import commands
 from discord import app_commands
 
-# commands.Cogを継承する
+from util import voicevox
+
+
+
 class VoiceVox(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.role_name = "autotts"
     
-    # イベントリスナー(ボットが起動したときやメッセージを受信したとき等)
+    # Bot on Ready
     @commands.Cog.listener()
     async def on_ready(self):
         print("[VoiceVox] on Ready")
 
+    # receive message
+    @commands.Cog.listener()
+    async def on_message(self,interaction:discord.Interaction, message):
+    #   if discord.utils.get(interaction.guild.roles, name=role_name) is True:
+    #         voice_vox = voicevox.VoiceVox()
+    #         bite_source = voice_vox.req_voice(message)
+    #         wav_io = io.BytesIO(bite_source)
+    #         source = discord.FFmpegPCMAudio(source=wav_io, pipe=True)
+    #         interaction.guild.voice_client.play(source)
+            print(message)
+            # await interaction.response.send_message(f"読み上げ:[{message}]")
 
-	
 
-    # コマンドデコレーター(descriptionで説明が書ける)
-    # @app_commands.command(name="speak", description="メッセージを読み上げます。")
-    # @app_commands.describe(talk_content="話す内容", speaker="話者")
-    # async def speak(self, integrations discord:Interaction):
-    #     talk_content = "test"
-    #     await interaction.response.send_message(talk_content)
-
-    @app_commands.command(name="aiueo")
-    async def aiueo(self,interaction:discord.Interaction):
-        await interaction.response.send_message("tintin")
-
-    @app_commands.command(name="joinvc", description="ボイスチャンネルに接続")
-    async def joinvc(self, interaction:discord.Interaction, channel: discord.VoiceChannel):
-        """Joins a voice channel"""
-        await interaction.response.send_message("join")
-        await channel.connect()
 
     @app_commands.command(name="testplay", description="音声の再生") 
-    async def testplay(self, integration:discord.Interaction):
+    async def testplay(self, interaction:discord.Interaction):
         source = discord.FFmpegPCMAudio("/home/ahahahaha/discoZUNDA/commands/test.wav")
-        integration.guild.voice_client.play(source)
+        await interaction.response.send_message("これはテストです")
+        interaction.guild.voice_client.play(source)
+
+
+    @app_commands.command(name="tts", description="messageの読み上げ") 
+    @app_commands.describe(text="読み上げテキスト")
+    async def tts(self, interaction:discord.Interaction, text:str):
+        voice_vox = voicevox.VoiceVox()
+        bite_source = voice_vox.req_voice(text)
+        wav_io = io.BytesIO(bite_source)
+        source = discord.FFmpegPCMAudio(source=wav_io, pipe=True)
+        interaction.guild.voice_client.play(source)
+        await interaction.response.send_message(f"読み上げ[{text}]")
+
+    @app_commands.command(name="autotts", description="メッセージの自動読み上げ")
+    async def autotts(self, interaction:discord.Interaction):
+        if discord.utils.get(interaction.guild.roles, name=self.role_name) is None:
+            await interaction.guild.create_role(name=self.role_name)
+            response = f"ロール:{self.role_name}を作成しました\n"
+        print(discord.utils.get(interaction.user.roles))
+        await interaction.user.add_roles(discord.utils.get(interaction.guild.roles, name=self.role_name))
+        await interaction.response.send_message(response + f"{interaction.user.name}に{self.role_name}を付与しました")
+
+    @app_commands.command(name="endautotts", description="メッセージの自動読み上げ")
+    async def endautotts(self, interaction:discord.Interaction):
+        await interaction.user.remove_roles(discord.utils.get(interaction.guild.roles, name=self.role_name))
+        await interaction.response.send_message(f"{interaction.user.name}から{self.role_name}を削除しました")
+
+
         
-        # voice.play()
-
-
-
-
-    # @app_commands.command(name="greet", description="指定したユーザーに挨拶をします。")
-    # @app_commands.describe(user="挨拶を送るユーザー")
-    # async def greet(self, interaction: discord.Interaction, user: discord.User):
-    #     greeting = f"Hello, {user.display_name}!"
-    #     await interaction.response.send_message(greeting)
 
 
 async def setup(bot):
