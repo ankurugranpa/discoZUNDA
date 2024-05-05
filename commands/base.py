@@ -22,7 +22,7 @@ class Base(commands.Cog):
     @app_commands.command(name="leavevc", description="ボイスチャンネルから離れる")
     async def leavevc(self, interaction:discord.Interaction):
         await interaction.guild.voice_client.disconnect()
-        await interaction.response.send_message(f"leave")
+        await interaction.response.send_message(f"leaved")
 
 
 async def setup(bot):
