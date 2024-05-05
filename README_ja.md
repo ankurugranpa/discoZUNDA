@@ -1,24 +1,20 @@
 # discoZunda
-[Japanese README.md](./README_ja.md)
+English README.md[./README.md]
 ## Requierment
-- You need poetry
+- poetryが必要
 ```
 pip install poetry
 ```
-- You need VoiceVox EngineAPI
+- VoiceVox EnginAPIが必要
 [VOICEVOX/voicevox_engine](https://github.com/VOICEVOX/voicevox_engine)
-use with docker 
+dockerをしようする場合は以下の通りになります
 ```
 docker pull voicevox/voicevox_engine:cpu-ubuntu20.04-latest
 docker run --rm -p '127.0.0.1:50021:50021' voicevox/voicevox_engine:cpu-ubuntu20.04-latest
 ```
 
 ## How to Use
+- clone this repository
 ```
 git clone git@github.com:ankurugranpa/discoZUNDA.git
-cd discoZUNDA
-python3 -m poetry install 
-cp .env.exsample .env
-## you need setting .env file ##
-python3 -m poetry run python3 main.py
 ```
