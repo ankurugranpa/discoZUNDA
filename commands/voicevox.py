@@ -1,4 +1,5 @@
 import io
+import re
 
 import discord
 from discord.ext import commands
@@ -20,15 +21,14 @@ class VoiceVox(commands.Cog):
 
     # receive message
     @commands.Cog.listener()
-    async def on_message(self,interaction:discord.Interaction, message):
-    #   if discord.utils.get(interaction.guild.roles, name=role_name) is True:
-    #         voice_vox = voicevox.VoiceVox()
-    #         bite_source = voice_vox.req_voice(message)
-    #         wav_io = io.BytesIO(bite_source)
-    #         source = discord.FFmpegPCMAudio(source=wav_io, pipe=True)
-    #         interaction.guild.voice_client.play(source)
-            print(message)
-            # await interaction.response.send_message(f"読み上げ:[{message}]")
+    async def on_message(self, message):
+            if discord.utils.get(message.author.roles, name=self.role_name).name == self.role_name:
+                voice_vox = voicevox.VoiceVox()
+                bite_source = voice_vox.req_voice(message.content)
+                wav_io = io.BytesIO(bite_source)
+                source = discord.FFmpegPCMAudio(source=wav_io, pipe=True)
+                message.guild.voice_client.play(source)
+
 
 
 
