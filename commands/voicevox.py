@@ -9,10 +9,18 @@ from util import voicevox
 
 
 
+class BasicView(discord.ui.View):
+    @discord.ui.button(label="Click!")
+    async def click(self, interaction: discord.Interaction, button: discord.Button) -> None:
+        await interaction.response.send_message("Clicked")
+
+
 class VoiceVox(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot, timeout=180):
         self.bot = bot
         self.role_name = "autotts"
+        self.voice_vox = voicevox.VoiceVox()
+        # super().__init__(timeout=timeout)
     
     # Bot on Ready
     @commands.Cog.listener()
@@ -22,9 +30,12 @@ class VoiceVox(commands.Cog):
     # receive message
     @commands.Cog.listener()
     async def on_message(self, message):
+            if message.author.bot == True:
+                return
             if discord.utils.get(message.author.roles, name=self.role_name).name == self.role_name:
-                voice_vox = voicevox.VoiceVox()
-                bite_source = voice_vox.req_voice(message.content)
+                # voice_vox = voicevox.VoiceVox()
+                bite_source = self.voice_vox.req_voice(message.content)
+                # bite_source = voice_vox.req_voice(message.content)
                 wav_io = io.BytesIO(bite_source)
                 source = discord.FFmpegPCMAudio(source=wav_io, pipe=True)
                 message.guild.voice_client.play(source)
@@ -42,8 +53,9 @@ class VoiceVox(commands.Cog):
     @app_commands.command(name="tts", description="messageの読み上げ") 
     @app_commands.describe(text="読み上げテキスト")
     async def tts(self, interaction:discord.Interaction, text:str):
-        voice_vox = voicevox.VoiceVox()
-        bite_source = voice_vox.req_voice(text)
+        # voice_vox = voicevox.VoiceVox()
+        bite_source = self.voice_vox.req_voice(text)
+        # bite_source = voice_vox.req_voice(text)
         wav_io = io.BytesIO(bite_source)
         source = discord.FFmpegPCMAudio(source=wav_io, pipe=True)
         interaction.guild.voice_client.play(source)
@@ -54,6 +66,8 @@ class VoiceVox(commands.Cog):
         if discord.utils.get(interaction.guild.roles, name=self.role_name) is None:
             await interaction.guild.create_role(name=self.role_name)
             response = f"ロール:{self.role_name}を作成しました\n"
+        else:
+            response = ""
         print(discord.utils.get(interaction.user.roles))
         await interaction.user.add_roles(discord.utils.get(interaction.guild.roles, name=self.role_name))
         await interaction.response.send_message(response + f"{interaction.user.name}に{self.role_name}を付与しました")
@@ -64,7 +78,13 @@ class VoiceVox(commands.Cog):
         await interaction.response.send_message(f"{interaction.user.name}から{self.role_name}を削除しました")
 
 
-        
+    @app_commands.command(name="setspeaker", description="話者の選択")
+    async def setspeaker(self, interaction:discord.Interaction, speaker_num:int):
+        # view = SampleView(timeout=None)
+        # await interaction.response.send_message(view)
+        self.voice_vox.set_speaker(speaker_num)
+        await interaction.response.send_message(f"{speaker_num}に設定しました")
+        # await interaction.response.send_message(view=BasicView())
 
 
 async def setup(bot):

@@ -6,6 +6,7 @@ from util import env
 class VoiceVox():
     def __init__(self) -> None:
         self.URL = env.VOICEVOX_BASE_URL
+        self.speaker = 1
 
     def req_voice(self, voice_text:str):
         params = {
@@ -13,13 +14,22 @@ class VoiceVox():
         }
 
         # POSTリクエストを送信
-        response = requests.post(f'{self.URL}audio_query?speaker=1', params=params)
+        response = requests.post(f'{self.URL}audio_query?speaker={self.speaker}', params=params)
         query = response.json()
 
         headers = {'Content-Type': 'application/json'}
         # POSTリクエストを送信
-        voice = requests.post(f"{self.URL}synthesis?speaker=1", headers=headers, json=query)
+        voice = requests.post(f"{self.URL}synthesis?speaker={self.speaker}", headers=headers, json=query)
         return voice.content
+
+    def set_speaker(self, speaker_num:int):
+        self.speaker = speaker_num
+
+    def speaker_list(self, speaker_num):
+        return
+
+
+
 
 if __name__=="__main__":
     voice_vox = VoiceVox()
