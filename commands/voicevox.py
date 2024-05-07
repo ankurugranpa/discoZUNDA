@@ -1,5 +1,4 @@
 import io
-import re
 
 import discord
 from discord.ext import commands
@@ -8,11 +7,107 @@ from discord import app_commands
 from util import voicevox
 
 
+class SpeakerButton(discord.ui.Button):
 
-class BasicView(discord.ui.View):
-    @discord.ui.button(label="Click!")
-    async def click(self, interaction: discord.Interaction, button: discord.Button) -> None:
-        await interaction.response.send_message("Clicked")
+    def __init__(self, name):
+        super().__init__(label=name, style=discord.ButtonStyle.primary)
+        self.name = name
+
+    async def callback(self, interaction: discord.Interaction):
+        test_list = [1, 2, 3, 4]
+        # await interaction.response.send_message(f"Cicked:{self.name}")
+        await interaction.response.send_message(view=SpeakerButtonView(test_list))
+
+
+
+
+class SpeakerButtonView(discord.ui.View):
+
+    def __init__(self, name_list:list):
+        super().__init__()
+        self.name_list = name_list
+        self.name_list_len = len(self.name_list)
+        # viewにセレクトを追加
+        i = 0
+        for name in name_list:
+            if i==25:
+                return
+            self.add_item(SpeakerButton(f"{name}"))
+            i = i+ 1
+
+    def menu(self):
+        if self.name_list_len < 25:
+            for name in self.name_list:
+                self.add_item(SpeakerButton(f"{name}"))
+        else:
+            top_list = self.__top_menu()
+            top_list_len = len(top_list)
+            if top_list_len%23 == 0:
+                self.__bottom_menu(top_list)
+            else:
+                for i in top_list_len/23:
+                    self.__bottom_menu(top_list)
+
+
+
+
+
+            
+
+
+
+
+
+
+    def __top_menu(self) -> list:
+        """
+         0 < self.name_list < 25
+        """
+        i = 0
+        for name in self.name_list:
+            if i == 25:
+                self.add_item(SpeakerButton("NextPage⇒"))
+            self.add_item(SpeakerButton(f"{name}"))
+        next_list = self.name_list[25:]
+        return next_list
+
+
+    def __middle_menu(self, name_list:list) -> list:
+        """
+         26 < self.name_list < 49
+        """
+        i = 0
+        for name in name_list:
+            if i == 0:
+                self.add_item(SpeakerButton("⇐PrePage"))
+            if i == 25:
+                self.add_item(SpeakerButton("NextPage⇒"))
+            self.add_item(SpeakerButton(f"{name}"))
+        next_middle_list = self.name_list[24:]
+        return next_middle_list
+
+    def __bottom_menu(self, name_list:list):
+        i = 0
+        for name in name_list:
+            if i == 0:
+                self.add_item(SpeakerButton("⇐PrePage"))
+            self.add_item(SpeakerButton(f"{name}"))
+
+            
+
+
+
+        
+
+
+
+
+        
+
+
+        
+
+
 
 
 class VoiceVox(commands.Cog):
@@ -85,6 +180,30 @@ class VoiceVox(commands.Cog):
         self.voice_vox.set_speaker(speaker_num)
         await interaction.response.send_message(f"{speaker_num}に設定しました")
         # await interaction.response.send_message(view=BasicView())
+
+
+
+
+
+    @app_commands.command(name="ui_test", description="uiのテスト")
+    async def ui_test(self, interaction:discord.Interaction):
+        # view = discord.ui.View()
+        # async def button_callback(interaction):
+        #     await interaction.response.send_message("Button was clicked!", ephemeral=True)
+
+        # # Googleのボタンを追加
+        # for i in range(10):
+        #     button = discord.ui.Button(label="Click Me!", style=discord.ButtonStyle.green)
+
+        #     button.callback = button_callback
+
+        #     # ビュー（ボタンを含むコンテナ）を作成
+        #     # view = View()
+        #     view.add_item(button)
+        #     # view.add_item(discord.ui.Button(label="Click Me!", style=discord.ButtonStyle.green))
+        await interaction.response.send_message(view=SpeakerButtonView(self.voice_vox.speaker_list()))
+
+
 
 
 async def setup(bot):
