@@ -5,6 +5,9 @@
 ```
 pip install poetry
 ```
+- voice client support 
+You need to install `libffi-dev` and `ffmpeg`.
+
 - You need VoiceVox EngineAPI
 [VOICEVOX/voicevox_engine](https://github.com/VOICEVOX/voicevox_engine)
 use with docker 
