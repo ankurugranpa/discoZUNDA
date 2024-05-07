@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 from util import env
@@ -7,6 +9,11 @@ class VoiceVox():
     def __init__(self) -> None:
         self.URL = env.VOICEVOX_BASE_URL
         self.speaker = 1
+        self.core_versions = self._get_core_version()
+
+    def test(self):
+        print(self.core_versions)
+
 
     def req_voice(self, voice_text:str):
         params = {
@@ -25,15 +32,25 @@ class VoiceVox():
     def set_speaker(self, speaker_num:int):
         self.speaker = speaker_num
 
-    def speaker_list(self, speaker_num):
+    def speaker_dict(self, speaker_num):
         return
 
+    def _get_core_version(self):
+        req_url = f"{self.URL}core_versions"
+        response = requests.get(req_url)
+        return response.json()[0]
 
 
+    def _get_speaker_list(self):
+        url = f"{self.URL}speakers"
+        params = {
+            'core_version': self.core_versions
+        }
+        headers = {'accept': 'application/json'}
+        response = requests.get(url, headers=headers, params=params)
+        return response.json()
 
-if __name__=="__main__":
-    voice_vox = VoiceVox()
-    source = voice_vox.req_voice("おなかすいたご飯何?")
-    with open('./output.wav', 'wb') as f:
-        f.write(source)
-    print("WAVファイルが正常に保存されました。")
+    
+    def create_speaker_json(self):
+        speaker_list = self._get_speaker_list()
+        print(speaker_list[2]["styles"])
