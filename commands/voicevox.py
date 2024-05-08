@@ -1,4 +1,5 @@
 import io
+from functools import cache
 
 import discord
 from discord.ext import commands
@@ -27,86 +28,105 @@ class SpeakerButtonView(discord.ui.View):
         super().__init__()
         self.name_list = name_list
         self.name_list_len = len(self.name_list)
-        # viewにセレクトを追加
-        i = 0
-        for name in name_list:
-            if i==25:
-                return
-            self.add_item(SpeakerButton(f"{name}"))
-            i = i+ 1
+        self.page_num_f = 1 # 現在のページ
+        self.page_sum = self._clacpage() # 合計ページ
+        self.menu()
+        # # viewにセレクトを追加
+        # i = 0
+        # for name in name_list:
+        #     if i==25:
+        #         return
+        #     self.add_item(SpeakerButton(f"{name}"))
+        #     i = i+ 1
+
+    @cache
+    def _clacpage(self) -> int:
+        if self.name_list_len < 25:
+            return 1
+        elif (self.name_list_len >= 25 and self.name_list_len < 48):
+            return 2
+        else:
+            quotient = (self.name_list_len - 24) // 23
+            remainde = (self.name_list_len - 24) % 23
+            return 1 + quotient + remainde
+
+
 
     def menu(self):
-        if self.name_list_len < 25:
+
+        # 総ページ数が1
+        if self.page_sum == 1:
             for name in self.name_list:
                 self.add_item(SpeakerButton(f"{name}"))
-        else:
-            top_list = self.__top_menu()
-            top_list_len = len(top_list)
-            if top_list_len%23 == 0:
-                self.__bottom_menu(top_list)
+        # 総ページ数が2
+        elif self.page_sum == 2:
+            if self.page_num_f == 1:
+                for name in self.name_list[:24]:
+                    self.add_item(SpeakerButton(f"{name}"))
+                self.add_item(SpeakerButton("NextPage"))
+                self.page_num_f = 2
             else:
-                for i in top_list_len/23:
-                    self.__bottom_menu(top_list)
+                self.add_item(SpeakerButton("PrevPage"))
+                for name in self.name_list[25:]:
+                    self.add_item(SpeakerButton(f"{name}"))
+
+        # 総ページ数が3~
+        else:
+            if self.page_num_f == 1:
+                for name in self.name_list[:24]:
+                    self.add_item(SpeakerButton(f"{name}"))
+                self.add_item(SpeakerButton("NextPage"))
+                self.page_num_f = 2
+
+            elif self.page_num_f != self.page_sum:
+                buf_start = ((self.page_num_f - 2) * 23) + 24 
+                buf_end = buf_start + 24
+                self.add_item(SpeakerButton("PrevPage"))
+                for name in self.name_list[buf_start:buf_end]:
+                    self.add_item(SpeakerButton(f"{name}"))
+                self.add_item(SpeakerButton("NextPage"))
+                self.page_num_f += 1
+
+            elif self.page_num_f == self.page_sum:
+                buf_start = ((self.page_num_f - 2) * 23) + 24 
+                self.add_item(SpeakerButton("PrevPage"))
+                for name in self.name_list[buf_start:]:
+                    self.add_item(SpeakerButton(f"{name}"))
 
 
+    # def __top_menu(self) -> list:
+    #     """
+    #      0 < self.name_list < 25
+    #     """
+    #     i = 0
+    #     for name in self.name_list:
+    #         if i == 25:
+    #             self.add_item(SpeakerButton("NextPage⇒"))
+    #         self.add_item(SpeakerButton(f"{name}"))
+    #     next_list = self.name_list[25:]
+    #     return next_list
 
 
+    # def __middle_menu(self, name_list:list) -> list:
+    #     """
+    #      26 < self.name_list < 49
+    #     """
+    #     i = 0
+    #     for name in name_list:
+    #         if i == 0:
+    #             self.add_item(SpeakerButton("⇐PrePage"))
+    #         if i == 25:
+    #             self.add_item(SpeakerButton("NextPage⇒"))
+    #         self.add_item(SpeakerButton(f"{name}"))
+    #     next_middle_list = self.name_list[24:]
+    #     return next_middle_list
 
-            
-
-
-
-
-
-
-    def __top_menu(self) -> list:
-        """
-         0 < self.name_list < 25
-        """
-        i = 0
-        for name in self.name_list:
-            if i == 25:
-                self.add_item(SpeakerButton("NextPage⇒"))
-            self.add_item(SpeakerButton(f"{name}"))
-        next_list = self.name_list[25:]
-        return next_list
-
-
-    def __middle_menu(self, name_list:list) -> list:
-        """
-         26 < self.name_list < 49
-        """
-        i = 0
-        for name in name_list:
-            if i == 0:
-                self.add_item(SpeakerButton("⇐PrePage"))
-            if i == 25:
-                self.add_item(SpeakerButton("NextPage⇒"))
-            self.add_item(SpeakerButton(f"{name}"))
-        next_middle_list = self.name_list[24:]
-        return next_middle_list
-
-    def __bottom_menu(self, name_list:list):
-        i = 0
-        for name in name_list:
-            if i == 0:
-                self.add_item(SpeakerButton("⇐PrePage"))
-            self.add_item(SpeakerButton(f"{name}"))
-
-            
-
-
-
-        
-
-
-
-
-        
-
-
-        
-
+    # def __bottom_menu(self, name_list:list):
+    #     i = 0
+    #     for name in name_list:
+    #         if i == 0:
+    #             self.add_item(SpeakerButton("⇐PrePage"))
+    #         self.add_item(SpeakerButton(f"{name}"))
 
 
 
